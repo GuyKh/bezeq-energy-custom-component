@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "הכנס את פרטי ההתחברות לבזק Energy.",
+        "data": {
+          "username": "שם משתמש",
+          "password": "סיסמה"
+        }
+      }
+    },
+    "error": {
+      "auth": "שם משתמש/סיסמה לא נכונים.",
+      "connection": "לא ניתן להתקשר לשרת.",
+      "unknown": "שגיאה לא מוכרת."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "monthly_usage": {
+        "name": "צריכה חודשית",
+        "state_attributes": {
+          "current_month": {
+            "name": "Current Month"
+          }
+        }
+      },
+      "daily_usage": {
+        "name": "צריכה יומית",
+        "state_attributes": {
+          "current_day": {
+            "name": "יום נוכחי"
+          }
+        }
+      },
+      "package": {
+        "name": "חבילה",
+        "state_attributes": {
+          "description": {
+            "name": "תאור"
+          },
+          "discount": {
+            "name": "הנחה"
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "is_last_invoice_paid": {
+        "name": "האם חשבונית אחרונה שולמה?",
+        "state_attributes": {
+          "invoice_number": {
+            "name": "מס' חשבונית"
+          },
+          "sum": {
+            "name": "סכום בחשבונית"
+          },
+          "date_period": {
+            "name": "תאריך חשבונית"
+          }
+        }
+      }
+    }
+  }
+}
