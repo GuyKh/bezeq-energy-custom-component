@@ -15,6 +15,12 @@
       "unknown": "Unknown error occurred."
     }
   },
+  "services": {
+    "debug_get_coordinator_data": {
+      "name": "Get Bezeq Energy Coordinator Data",
+      "description": "Fetch and return the coordinator data for debugging purposes."
+    }
+  },
   "entity": {
     "sensor": {
       "this_month_usage": {

@@ -15,6 +15,12 @@
       "unknown": "שגיאה לא מוכרת."
     }
   },
+  "services": {
+    "debug_get_coordinator_data": {
+      "name": "הבא מידע מבזק אנרג'י",
+      "description": "הדפס מידע קיים בקורדינטור של בזק אנרג'י."
+    }
+  },
   "entity": {
     "sensor": {
       "this_month_usage": {
