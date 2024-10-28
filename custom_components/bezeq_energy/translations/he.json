@@ -17,19 +17,38 @@
   },
   "entity": {
     "sensor": {
-      "monthly_usage": {
-        "name": "צריכה חודשית",
+      "this_month_usage": {
+        "name": "צריכה בחודש האחרון",
         "state_attributes": {
           "current_month": {
             "name": "Current Month"
           }
         }
       },
-      "daily_usage": {
-        "name": "צריכה יומית",
+      "today_usage": {
+        "name": "צריכה היום",
         "state_attributes": {
           "current_day": {
             "name": "יום נוכחי"
+          }
+        }
+      },
+      "last_month_usage": {
+        "name": "צריכה בחודש הקודם",
+        "state_attributes": {
+          "month": {
+            "name": "חודש"
+          }
+        }
+      },
+      "last_month_cost": {
+        "name": "עלות החשבון בחודש הקודם",
+        "state_attributes": {
+          "month": {
+            "name": "חודש"
+          },
+          "invoice_id": {
+            "name": "מס' חשבונית"
           }
         }
       },

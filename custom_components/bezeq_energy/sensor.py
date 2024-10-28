@@ -12,12 +12,17 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfEnergy
 
-from custom_components.bezeq_energy.const import (
+from .commons import (
+    translate_date_period,
+)
+from .const import (
     DAILY_USAGE_KEY,
+    LAST_MONTH_INVOICE_KEY,
+    LAST_MONTH_USAGE_KEY,
     MONTHLY_USAGE_KEY,
     MY_PACKAGE_KEY,
+    UNIT_ILS,
 )
-
 from .entity import BezeqEnergyEntity, BezeqEnergyEntityDescriptionMixin
 
 if TYPE_CHECKING:
@@ -37,7 +42,7 @@ class BezeqEnergySensorEntityDescription(
 
 ENTITY_DESCRIPTIONS = (
     BezeqEnergySensorEntityDescription(
-        key="monthly_usage",
+        key="this_month_usage",
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         suggested_display_precision=3,
@@ -51,7 +56,38 @@ ENTITY_DESCRIPTIONS = (
         },
     ),
     BezeqEnergySensorEntityDescription(
-        key="daily_usage",
+        key="last_month_usage",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=3,
+        value_fn=lambda data: data[LAST_MONTH_USAGE_KEY].sum_all_month
+        if data[LAST_MONTH_USAGE_KEY]
+        else None,
+        custom_attrs_fn=lambda data: {
+            "month": data[LAST_MONTH_USAGE_KEY].usage_month
+            if data[LAST_MONTH_USAGE_KEY]
+            else None
+        },
+    ),
+    BezeqEnergySensorEntityDescription(
+        key="last_month_cost",
+        device_class=SensorDeviceClass.MONETARY,
+        native_unit_of_measurement=UNIT_ILS,
+        suggested_display_precision=3,
+        value_fn=lambda data: data[LAST_MONTH_INVOICE_KEY].sum
+        if data[LAST_MONTH_INVOICE_KEY]
+        else None,
+        custom_attrs_fn=lambda data: {
+            "month": translate_date_period(data[LAST_MONTH_INVOICE_KEY].date_period)
+            if data[LAST_MONTH_INVOICE_KEY]
+            else None,
+            "invoice_id": data[LAST_MONTH_INVOICE_KEY].invoice_id
+            if data[LAST_MONTH_INVOICE_KEY]
+            else None,
+        },
+    ),
+    BezeqEnergySensorEntityDescription(
+        key="today_usage",
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         suggested_display_precision=3,
