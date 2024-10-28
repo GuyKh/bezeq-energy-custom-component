@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Enter your Bezeq Energy account details.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "auth": "Username/Password is wrong.",
+      "connection": "Unable to connect to the server.",
+      "unknown": "Unknown error occurred."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "monthly_usage": {
+        "name": "Monthly Usage",
+        "state_attributes": {
+          "current_month": {
+            "name": "Current Month"
+          }
+        }
+      },
+      "daily_usage": {
+        "name": "Daily Usage",
+        "state_attributes": {
+          "current_day": {
+            "name": "Current Day"
+          }
+        }
+      },
+      "package": {
+        "name": "Package",
+        "state_attributes": {
+          "description": {
+            "name": "Description"
+          },
+          "discount": {
+            "name": "Discount"
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "is_last_invoice_paid": {
+        "name": "Is Last Invoice Paid?",
+        "state_attributes": {
+          "invoice_number": {
+            "name": "Invoice Number"
+          },
+          "sum": {
+            "name": "Invoice Sum"
+          },
+          "date_period": {
+            "name": "Date Period"
+          }
+        }
+      }
+    }
+  }
+}
