@@ -17,16 +17,35 @@
   },
   "entity": {
     "sensor": {
-      "monthly_usage": {
-        "name": "Monthly Usage",
+      "this_month_usage": {
+        "name": "This Month Usage",
         "state_attributes": {
           "current_month": {
             "name": "Current Month"
           }
         }
       },
-      "daily_usage": {
-        "name": "Daily Usage",
+      "last_month_usage": {
+        "name": "Last Month Usage",
+        "state_attributes": {
+          "month": {
+            "name": "Month"
+          }
+        }
+      },
+      "last_month_cost": {
+        "name": "Last Month Cost",
+        "state_attributes": {
+          "month": {
+            "name": "Month"
+          },
+          "invoice_id": {
+            "name": "Invoice ID"
+          }
+        }
+      },
+      "today_usage": {
+        "name": "Today Usage",
         "state_attributes": {
           "current_day": {
             "name": "Current Day"
