@@ -14,6 +14,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.loader import async_get_loaded_integration
 from my_bezeq import MyBezeqAPI
 
+from .const import DOMAIN, LOGGER
 from .coordinator import BezeqElecDataUpdateCoordinator
 from .data import BezeqEnergyData
 
@@ -52,6 +53,17 @@ async def async_setup_entry(
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
+    # Register the debug service
+    async def handle_debug_get_coordinator_data(call) -> None:  # noqa: ANN001 ARG001
+        # Log or return coordinator data
+        data = coordinator.data
+        LOGGER.info("Coordinator data: %s", data)
+        hass.bus.async_fire("custom_component_debug_event", {"data": data})
+
+    hass.services.async_register(
+        DOMAIN, "debug_get_coordinator_data", handle_debug_get_coordinator_data
+    )
 
     return True
 
