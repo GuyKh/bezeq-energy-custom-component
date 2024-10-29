@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from my_bezeq import Invoice
+from my_bezeq import BaseCardDetails, Invoice, ServiceType
 
 
 def get_last_invoice(invoices: list[Invoice]) -> Invoice | None:
@@ -50,3 +50,12 @@ def translate_date_period(date_period: str) -> str:
 def translate_date_to_date_period(date_period: date) -> str:
     """Format date to standard (comparable) date."""
     return date_period.strftime("%Y-%m")
+
+
+def get_card_by_service_type(cards: list, service_type: ServiceType) -> BaseCardDetails:
+    """Extract Card Data from Tab by service type."""
+    card = next(filter(lambda card: card.service_type == service_type, cards), None)
+    if card is None:
+        msg = f"Card {service_type} not found"
+        raise ValueError(msg)
+    return card.card_details

@@ -14,9 +14,16 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.loader import async_get_loaded_integration
 from my_bezeq import MyBezeqAPI
 
-from .const import DOMAIN, LOGGER
+from .const import (
+    CONF_CONTRACT_NUMBER,
+    CONF_COUNTER_NUMBER,
+    CONF_IS_SMART_METER,
+    CONF_SUBSCRIBER_NUMBER,
+    DOMAIN,
+    LOGGER,
+)
 from .coordinator import BezeqElecDataUpdateCoordinator
-from .data import BezeqEnergyData
+from .data import BezeqEnergyData, BezeqEnergyDeviceInfo
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -46,6 +53,12 @@ async def async_setup_entry(
         ),
         integration=async_get_loaded_integration(hass, entry.domain),
         coordinator=coordinator,
+        device_info=BezeqEnergyDeviceInfo(
+            is_smart_meter=entry.data.get(CONF_IS_SMART_METER, False),
+            counter_number=entry.data.get(CONF_COUNTER_NUMBER),
+            contract_number=entry.data.get(CONF_CONTRACT_NUMBER),
+            subscriber_number=entry.data.get(CONF_SUBSCRIBER_NUMBER),
+        ),
     )
 
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities

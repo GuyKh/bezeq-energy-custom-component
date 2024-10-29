@@ -21,12 +21,15 @@ from my_bezeq import (
     ServiceType,
 )
 
-from .commons import translate_date_period, translate_date_to_date_period
+from .commons import (
+    get_card_by_service_type,
+    translate_date_period,
+    translate_date_to_date_period,
+)
 from .const import (
     DAILY_USAGE_KEY,
     DOMAIN,
     ELEC_INVOICE_KEY,
-    ELEC_PAYER_KEY,
     LAST_MONTH_INVOICE_KEY,
     LAST_MONTH_USAGE_KEY,
     LOGGER,
@@ -43,14 +46,6 @@ if TYPE_CHECKING:
 
 timezone = dt_util.get_time_zone("Asia/Jerusalem")
 _LOGGER = logging.getLogger(__name__)
-
-
-def _get_card_by_service_type(cards: list, service_type: ServiceType):  # noqa: ANN202
-    card = next(filter(lambda card: card.service_type == service_type, cards))
-    if card is None:
-        msg = f"Card {service_type} not found"
-        raise UpdateFailed(msg)
-    return card.card_details
 
 
 # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
@@ -73,6 +68,8 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _get_data(self):  # noqa: ANN202
         api: MyBezeqAPI = self.config_entry.runtime_data.client
+        is_smart_meter = self.config_entry.runtime_data.device_info.is_smart_meter
+
         _LOGGER.debug("Logging in to my.bezeq.co.il")
         await api.login()
         _LOGGER.debug("Successfully logged in to my.bezeq.co.il. Getting dashboard...")
@@ -84,65 +81,71 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
         data = {}
         last_month: date = today + relativedelta(months=-1)
 
-        _LOGGER.debug("Fetching electricity monthly usage...")
-        monthly_usages = (
-            await api.electric.get_elec_usage_report(
-                ElectricReportLevel.MONTHLY,
-                last_month.replace(day=1),
-                today.replace(day=last_day_of_month),
+        if is_smart_meter:
+            _LOGGER.debug("Fetching electricity monthly usage...")
+            monthly_usages = (
+                await api.electric.get_elec_usage_report(
+                    ElectricReportLevel.MONTHLY,
+                    last_month.replace(day=1),
+                    today.replace(day=last_day_of_month),
+                )
+            ).usage_data
+
+            data[MONTHLY_USAGE_KEY] = next(
+                (
+                    usage
+                    for usage in monthly_usages
+                    if usage.usage_month.month == today.month
+                ),
+                None,
             )
-        ).usage_data
 
-        data[MONTHLY_USAGE_KEY] = next(
-            (
-                usage
-                for usage in monthly_usages
-                if usage.usage_month.month == today.month
-            ),
-            None,
-        )
-
-        data[LAST_MONTH_USAGE_KEY] = next(
-            (
-                usage
-                for usage in monthly_usages
-                if usage.usage_month.month == last_month.month
-            ),
-            None,
-        )
-
-        tomorrow = today + timedelta(days=1)
-        _LOGGER.debug("Fetching electricity today usage...")
-        daily_usages = (
-            await api.electric.get_elec_usage_report(
-                ElectricReportLevel.DAILY, today, tomorrow
+            data[LAST_MONTH_USAGE_KEY] = next(
+                (
+                    usage
+                    for usage in monthly_usages
+                    if usage.usage_month.month == last_month.month
+                ),
+                None,
             )
-        ).usage_data
 
-        data[DAILY_USAGE_KEY] = next(
-            (usage for usage in daily_usages if usage.usage_day.date() == today), None
-        )
+            tomorrow = today + timedelta(days=1)
+            _LOGGER.debug("Fetching electricity today usage...")
+            daily_usages = (
+                await api.electric.get_elec_usage_report(
+                    ElectricReportLevel.DAILY, today, tomorrow
+                )
+            ).usage_data
+
+            data[DAILY_USAGE_KEY] = next(
+                (usage for usage in daily_usages if usage.usage_day.date() == today),
+                None,
+            )
+        else:
+            data[MONTHLY_USAGE_KEY] = None
+            data[LAST_MONTH_USAGE_KEY] = None
+            data[DAILY_USAGE_KEY] = None
 
         _LOGGER.debug("Fetching electricity tab...")
         elec_tab = await api.electric.get_electricity_tab()
-        data[PAYER_DETAILS_KEY] = _get_card_by_service_type(
+        data[PAYER_DETAILS_KEY] = get_card_by_service_type(
             elec_tab.cards, ServiceType.ELECTRICITY_PAYER
         )
 
-        data[MONTHLY_USED_KEY] = _get_card_by_service_type(
+        data[MONTHLY_USED_KEY] = get_card_by_service_type(
             elec_tab.cards, ServiceType.ELECTRICITY_MONTHLY_USED
         )
 
-        data[MY_PACKAGE_KEY] = _get_card_by_service_type(
+        data[MY_PACKAGE_KEY] = get_card_by_service_type(
             elec_tab.cards, ServiceType.ELECTRICITY_MY_PACKAGE_SERVICE
         )
 
-        data[ELEC_PAYER_KEY] = _get_card_by_service_type(
-            elec_tab.cards, ServiceType.ELECTRICITY_PAYER
-        )
+        #  This is not required since all the data is already in DeviceInfo
+        # data[ELEC_PAYER_KEY] = get_card_by_service_type(
+        #     elec_tab.cards, ServiceType.ELECTRICITY_PAYER)
 
         elec_invoices_tab = await api.invoices.get_electric_invoice_tab()
-        invoice_data = _get_card_by_service_type(
+        invoice_data = get_card_by_service_type(
             elec_invoices_tab.cards, ServiceType.INVOICES
         )
         data[ELEC_INVOICE_KEY] = invoice_data
@@ -154,15 +157,6 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
             and invoice_data.invoices
             and translate_date_period(invoice.date_period)
             == translate_date_to_date_period(last_month)
-        )
-
-        data[LAST_MONTH_USAGE_KEY] = next(
-            (
-                usage
-                for usage in monthly_usages
-                if usage.usage_month.month == last_month.month
-            ),
-            None,
         )
 
         return data

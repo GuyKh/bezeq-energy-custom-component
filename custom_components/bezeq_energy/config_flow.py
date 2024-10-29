@@ -13,9 +13,18 @@ from my_bezeq import (
     MyBezeqLoginError,
     MyBezeqUnauthorizedError,
     MyBezeqVersionError,
+    ServiceType,
 )
 
-from .const import DOMAIN, LOGGER
+from .commons import get_card_by_service_type
+from .const import (
+    CONF_CONTRACT_NUMBER,
+    CONF_COUNTER_NUMBER,
+    CONF_IS_SMART_METER,
+    CONF_SUBSCRIBER_NUMBER,
+    DOMAIN,
+    LOGGER,
+)
 
 
 class BezeqEnergyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -31,7 +40,12 @@ class BezeqEnergyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             try:
-                subscriber = await self._test_credentials(
+                (
+                    subscriber,
+                    is_smart_meter,
+                    counter_number,
+                    contract_number,
+                ) = await self._test_credentials(
                     username=user_input[CONF_USERNAME],
                     password=user_input[CONF_PASSWORD],
                 )
@@ -48,6 +62,11 @@ class BezeqEnergyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 LOGGER.exception(exception)
                 _errors["base"] = "unknown"
             else:
+                user_input[CONF_IS_SMART_METER] = is_smart_meter
+                user_input[CONF_COUNTER_NUMBER] = counter_number
+                user_input[CONF_CONTRACT_NUMBER] = contract_number
+                user_input[CONF_SUBSCRIBER_NUMBER] = subscriber
+
                 return self.async_create_entry(
                     title=f"Bezeq Energy - {subscriber}",
                     data=user_input,
@@ -84,13 +103,12 @@ class BezeqEnergyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
         await client.login()
         await client.dashboard.get_dashboard_tab()
-        energyity_tab = await client.electric.get_electricity_tab()
+        elec_tab = await client.electric.get_electricity_tab()
         if (
-            energyity_tab is None
-            or not energyity_tab.elect_subscribers
+            elec_tab is None
+            or not elec_tab.elect_subscribers
             or all(
-                not subscriber.is_current
-                for subscriber in energyity_tab.elect_subscribers
+                not subscriber.is_current for subscriber in elec_tab.elect_subscribers
             )
         ):
             msg = "This user is not Bezeq Energy user"
@@ -99,7 +117,26 @@ class BezeqEnergyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         subscriber = next(
             filter(
                 lambda subscriber: subscriber.is_current,
-                energyity_tab.elect_subscribers,
+                elec_tab.elect_subscribers,
             )
         )
-        return subscriber.subscriber if subscriber else None
+
+        if not subscriber:
+            msg = "Failed to get current subscriber"
+            raise MyBezeqError(msg)
+
+        is_smart_meter = False
+        counter_number = None
+        contract_number = None
+        try:
+            card = get_card_by_service_type(
+                elec_tab.cards, ServiceType.ELECTRICITY_PAYER
+            )
+            is_smart_meter = not card.have_mone_bsisi
+            counter_number = card.counter_number
+            contract_number = card.contract_number
+        except ValueError as e:
+            msg = "Failed to detect if smart meter"
+            raise MyBezeqError(msg) from e
+
+        return subscriber.subscriber, is_smart_meter, counter_number, contract_number

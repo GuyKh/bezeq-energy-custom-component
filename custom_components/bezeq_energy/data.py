@@ -17,9 +17,20 @@ type BezeqEnergyConfigEntry = ConfigEntry[BezeqEnergyData]
 
 
 @dataclass
+class BezeqEnergyDeviceInfo:
+    """Class describing Bezeq Energy device info."""
+
+    is_smart_meter: bool
+    counter_number: str
+    contract_number: str
+    subscriber_number: str
+
+
+@dataclass
 class BezeqEnergyData:
     """Data for the BezeqEnergy integration."""
 
     client: MyBezeqAPI
     coordinator: BezeqElecDataUpdateCoordinator
     integration: Integration
+    device_info: BezeqEnergyDeviceInfo
