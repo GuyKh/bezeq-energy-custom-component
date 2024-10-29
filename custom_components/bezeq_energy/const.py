@@ -7,6 +7,10 @@ LOGGER: Logger = getLogger(__package__)
 DOMAIN = "bezeq_energy"
 ATTRIBUTION = "Data provided by http://my.bezeq.co.il/"
 
+CONF_IS_SMART_METER = "is_smart_meter"
+CONF_COUNTER_NUMBER = "counter_number"
+CONF_CONTRACT_NUMBER = "contract_number"
+CONF_SUBSCRIBER_NUMBER = "subscriber_number"
 DAILY_USAGE_KEY = "daily_usage"
 MONTHLY_USAGE_KEY = "monthly_usage"
 IS_LAST_INVOICE_PAYED_KEY = "is_last_invoice_payed"

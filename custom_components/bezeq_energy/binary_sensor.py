@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+    from custom_components.bezeq_energy.data import BezeqEnergyDeviceInfo
+
     from .coordinator import BezeqElecDataUpdateCoordinator
     from .data import BezeqEnergyConfigEntry
 
@@ -30,7 +32,7 @@ class BezeqEnergyBinarySensorEntityDescription(
     """Class describing Bezeq Energy sensors entities."""
 
 
-ENTITY_DESCRIPTIONS = (
+ENTITY_DESCRIPTIONS = [
     BezeqEnergyBinarySensorEntityDescription(
         key="is_last_invoice_paid",
         value_fn=lambda data: get_last_invoice(data[ELEC_INVOICE_KEY].invoices).is_payed
@@ -52,7 +54,9 @@ ENTITY_DESCRIPTIONS = (
         )
         else None,
     ),
-)
+]
+
+SMART_METER_ENTITY_DESCRIPTIONS = []
 
 
 async def async_setup_entry(
@@ -61,12 +65,17 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the binary_sensor platform."""
+    entity_descriptions = ENTITY_DESCRIPTIONS
+    if entry.runtime_data.device_info.is_smart_meter:
+        entity_descriptions += SMART_METER_ENTITY_DESCRIPTIONS
+
     async_add_entities(
         BezeqEnergyBinarySensor(
             coordinator=entry.runtime_data.coordinator,
             entity_description=entity_description,
+            device_info=entry.runtime_data.device_info,
         )
-        for entity_description in ENTITY_DESCRIPTIONS
+        for entity_description in entity_descriptions
     )
 
 
@@ -77,9 +86,10 @@ class BezeqEnergyBinarySensor(BezeqEnergyEntity, BinarySensorEntity):
         self,
         coordinator: BezeqElecDataUpdateCoordinator,
         entity_description: BezeqEnergyBinarySensorEntityDescription,
+        device_info: BezeqEnergyDeviceInfo,
     ) -> None:
         """Initialize the binary_sensor class."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, device_info)
         self.entity_description = entity_description
 
         self._attr_unique_id = f"{entity_description.key}"

@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+    from custom_components.bezeq_energy.data import BezeqEnergyDeviceInfo
+
     from .coordinator import BezeqElecDataUpdateCoordinator
     from .data import BezeqEnergyConfigEntry
 
@@ -40,35 +42,7 @@ class BezeqEnergySensorEntityDescription(
     """Class describing Bezeq Energy sensors entities."""
 
 
-ENTITY_DESCRIPTIONS = (
-    BezeqEnergySensorEntityDescription(
-        key="this_month_usage",
-        device_class=SensorDeviceClass.ENERGY,
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        suggested_display_precision=3,
-        value_fn=lambda data: data[MONTHLY_USAGE_KEY].sum_all_month
-        if data[MONTHLY_USAGE_KEY]
-        else None,
-        custom_attrs_fn=lambda data: {
-            "current_month": data[MONTHLY_USAGE_KEY].usage_month
-            if data[MONTHLY_USAGE_KEY]
-            else None
-        },
-    ),
-    BezeqEnergySensorEntityDescription(
-        key="last_month_usage",
-        device_class=SensorDeviceClass.ENERGY,
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        suggested_display_precision=3,
-        value_fn=lambda data: data[LAST_MONTH_USAGE_KEY].sum_all_month
-        if data[LAST_MONTH_USAGE_KEY]
-        else None,
-        custom_attrs_fn=lambda data: {
-            "month": data[LAST_MONTH_USAGE_KEY].usage_month
-            if data[LAST_MONTH_USAGE_KEY]
-            else None
-        },
-    ),
+ENTITY_DESCRIPTIONS = [
     BezeqEnergySensorEntityDescription(
         key="last_month_cost",
         device_class=SensorDeviceClass.MONETARY,
@@ -87,6 +61,35 @@ ENTITY_DESCRIPTIONS = (
         },
     ),
     BezeqEnergySensorEntityDescription(
+        key="package",
+        value_fn=lambda data: data[MY_PACKAGE_KEY].package_name
+        if data[MY_PACKAGE_KEY]
+        else None,
+        custom_attrs_fn=lambda data: {
+            "description": data[MY_PACKAGE_KEY].description
+            if data[MY_PACKAGE_KEY]
+            else None,
+            "discount": data[MY_PACKAGE_KEY].discount if data[MY_PACKAGE_KEY] else None,
+        },
+    ),
+]
+
+SMART_METER_ENTITY_DESCRIPTIONS = [
+    BezeqEnergySensorEntityDescription(
+        key="this_month_usage",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=3,
+        value_fn=lambda data: data[MONTHLY_USAGE_KEY].sum_all_month
+        if data[MONTHLY_USAGE_KEY]
+        else None,
+        custom_attrs_fn=lambda data: {
+            "current_month": data[MONTHLY_USAGE_KEY].usage_month
+            if data[MONTHLY_USAGE_KEY]
+            else None
+        },
+    ),
+    BezeqEnergySensorEntityDescription(
         key="today_usage",
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
@@ -101,18 +104,20 @@ ENTITY_DESCRIPTIONS = (
         },
     ),
     BezeqEnergySensorEntityDescription(
-        key="package",
-        value_fn=lambda data: data[MY_PACKAGE_KEY].package_name
-        if data[MY_PACKAGE_KEY]
+        key="last_month_usage",
+        device_class=SensorDeviceClass.ENERGY,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        suggested_display_precision=3,
+        value_fn=lambda data: data[LAST_MONTH_USAGE_KEY].sum_all_month
+        if data[LAST_MONTH_USAGE_KEY]
         else None,
         custom_attrs_fn=lambda data: {
-            "description": data[MY_PACKAGE_KEY].description
-            if data[MY_PACKAGE_KEY]
-            else None,
-            "discount": data[MY_PACKAGE_KEY].discount if data[MY_PACKAGE_KEY] else None,
+            "month": data[LAST_MONTH_USAGE_KEY].usage_month
+            if data[LAST_MONTH_USAGE_KEY]
+            else None
         },
     ),
-)
+]
 
 
 async def async_setup_entry(
@@ -121,12 +126,17 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
+    entity_descriptions = ENTITY_DESCRIPTIONS
+    if entry.runtime_data.device_info.is_smart_meter:
+        entity_descriptions += SMART_METER_ENTITY_DESCRIPTIONS
+
     async_add_entities(
         BezeqEnergySensor(
             coordinator=entry.runtime_data.coordinator,
             entity_description=entity_description,
+            device_info=entry.runtime_data.device_info,
         )
-        for entity_description in ENTITY_DESCRIPTIONS
+        for entity_description in entity_descriptions
     )
 
 
@@ -137,9 +147,10 @@ class BezeqEnergySensor(BezeqEnergyEntity, SensorEntity):
         self,
         coordinator: BezeqElecDataUpdateCoordinator,
         entity_description: BezeqEnergySensorEntityDescription,
+        device_info: BezeqEnergyDeviceInfo,
     ) -> None:
         """Initialize the sensor class."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, device_info)
         self.entity_description = entity_description
         self._attr_unique_id = entity_description.key
         self._attr_translation_key = entity_description.key
