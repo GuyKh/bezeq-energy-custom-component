@@ -121,6 +121,7 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
                 (usage for usage in daily_usages if usage.usage_day.date() == today),
                 None,
             )
+
         else:
             data[MONTHLY_USAGE_KEY] = None
             data[LAST_MONTH_USAGE_KEY] = None
@@ -132,13 +133,16 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
             elec_tab.cards, ServiceType.ELECTRICITY_PAYER
         )
 
-        data[MONTHLY_USED_KEY] = get_card_by_service_type(
-            elec_tab.cards, ServiceType.ELECTRICITY_MONTHLY_USED
-        )
-
         data[MY_PACKAGE_KEY] = get_card_by_service_type(
             elec_tab.cards, ServiceType.ELECTRICITY_MY_PACKAGE_SERVICE
         )
+
+        if is_smart_meter:
+            data[MONTHLY_USED_KEY] = get_card_by_service_type(
+                elec_tab.cards, ServiceType.ELECTRICITY_MONTHLY_USED
+            )
+        else:
+            data[MONTHLY_USED_KEY] = None
 
         #  This is not required since all the data is already in DeviceInfo
         # data[ELEC_PAYER_KEY] = get_card_by_service_type(
