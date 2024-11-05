@@ -155,12 +155,15 @@ class BezeqElecDataUpdateCoordinator(DataUpdateCoordinator):
         data[ELEC_INVOICE_KEY] = invoice_data
 
         data[LAST_MONTH_INVOICE_KEY] = next(
-            invoice
-            for invoice in invoice_data.invoices
-            if invoice_data
-            and invoice_data.invoices
-            and translate_date_period(invoice.date_period)
-            == translate_date_to_date_period(last_month)
+            (
+                invoice
+                for invoice in invoice_data.invoices
+                if invoice_data
+                and invoice_data.invoices
+                and translate_date_period(invoice.date_period)
+                == translate_date_to_date_period(last_month)
+            ),
+            None,
         )
 
         return data
