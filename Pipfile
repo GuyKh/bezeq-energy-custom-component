@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+colorlog = "==6.9.0"
+homeassistant = "==2024.6.0"
+ruff = "==0.7.3"
+py-my-bezeq = "==0.1.4"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
