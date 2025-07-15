@@ -9,6 +9,13 @@
 
 _Integration to integrate with [Bezeq Energy][bezeq_energy]._
 
+> ⚠️ **Important Notice**  
+> This component is currently **non-functional** due to changes in the Bezeq API.  
+> Username and password-based login is no longer supported.  
+>  
+> 🔄 We are monitoring the situation and will provide updates as they become available.  
+> **Follow the repository** to stay informed.
+
 **This integration will set up the following platforms.**
 
 Platform | Description
