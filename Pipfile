@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-colorlog = "==6.9.0"
+colorlog = "==6.10.1"
 homeassistant = "==2024.6.0"
 ruff = "==0.14.1"
 py-my-bezeq = "==0.1.5"
