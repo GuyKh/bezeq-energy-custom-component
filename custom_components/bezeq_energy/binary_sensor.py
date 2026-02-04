@@ -35,24 +35,30 @@ class BezeqEnergyBinarySensorEntityDescription(
 ENTITY_DESCRIPTIONS = [
     BezeqEnergyBinarySensorEntityDescription(
         key="is_last_invoice_paid",
-        value_fn=lambda data: get_last_invoice(data[ELEC_INVOICE_KEY].invoices).is_payed
-        if (
-            data[ELEC_INVOICE_KEY] and get_last_invoice(data[ELEC_INVOICE_KEY].invoices)
-        )
-        else None,
-        custom_attrs_fn=lambda data: {
-            "invoice_number": get_last_invoice(
-                data[ELEC_INVOICE_KEY].invoices
-            ).invoice_number,
-            "sum": get_last_invoice(data[ELEC_INVOICE_KEY].invoices).sum,
-            "date_period": get_last_invoice(
-                data[ELEC_INVOICE_KEY].invoices
-            ).date_period,
-        }
-        if (
-            data[ELEC_INVOICE_KEY] and get_last_invoice(data[ELEC_INVOICE_KEY].invoices)
-        )
-        else None,
+        value_fn=lambda data: (
+            get_last_invoice(data[ELEC_INVOICE_KEY].invoices).is_payed
+            if (
+                data[ELEC_INVOICE_KEY]
+                and get_last_invoice(data[ELEC_INVOICE_KEY].invoices)
+            )
+            else None
+        ),
+        custom_attrs_fn=lambda data: (
+            {
+                "invoice_number": get_last_invoice(
+                    data[ELEC_INVOICE_KEY].invoices
+                ).invoice_number,
+                "sum": get_last_invoice(data[ELEC_INVOICE_KEY].invoices).sum,
+                "date_period": get_last_invoice(
+                    data[ELEC_INVOICE_KEY].invoices
+                ).date_period,
+            }
+            if (
+                data[ELEC_INVOICE_KEY]
+                and get_last_invoice(data[ELEC_INVOICE_KEY].invoices)
+            )
+            else None
+        ),
     ),
 ]
 
