@@ -48,9 +48,9 @@ ENTITY_DESCRIPTIONS = [
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement=UNIT_ILS,
         suggested_display_precision=3,
-        value_fn=lambda data: data[LAST_MONTH_INVOICE_KEY].sum
-        if data[LAST_MONTH_INVOICE_KEY]
-        else None,
+        value_fn=lambda data: (
+            data[LAST_MONTH_INVOICE_KEY].sum if data[LAST_MONTH_INVOICE_KEY] else None
+        ),
         custom_attrs_fn=lambda data: {
             "month": translate_date_period(data[LAST_MONTH_INVOICE_KEY].date_period)
             if data[LAST_MONTH_INVOICE_KEY]
@@ -62,9 +62,9 @@ ENTITY_DESCRIPTIONS = [
     ),
     BezeqEnergySensorEntityDescription(
         key="package",
-        value_fn=lambda data: data[MY_PACKAGE_KEY].package_name
-        if data[MY_PACKAGE_KEY]
-        else None,
+        value_fn=lambda data: (
+            data[MY_PACKAGE_KEY].package_name if data[MY_PACKAGE_KEY] else None
+        ),
         custom_attrs_fn=lambda data: {
             "description": data[MY_PACKAGE_KEY].description
             if data[MY_PACKAGE_KEY]
@@ -80,9 +80,9 @@ SMART_METER_ENTITY_DESCRIPTIONS = [
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         suggested_display_precision=3,
-        value_fn=lambda data: data[MONTHLY_USAGE_KEY].sum_all_month
-        if data[MONTHLY_USAGE_KEY]
-        else None,
+        value_fn=lambda data: (
+            data[MONTHLY_USAGE_KEY].sum_all_month if data[MONTHLY_USAGE_KEY] else None
+        ),
         custom_attrs_fn=lambda data: {
             "current_month": data[MONTHLY_USAGE_KEY].usage_month
             if data[MONTHLY_USAGE_KEY]
@@ -94,9 +94,9 @@ SMART_METER_ENTITY_DESCRIPTIONS = [
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         suggested_display_precision=3,
-        value_fn=lambda data: data[DAILY_USAGE_KEY].sum_all_day
-        if data[DAILY_USAGE_KEY]
-        else None,
+        value_fn=lambda data: (
+            data[DAILY_USAGE_KEY].sum_all_day if data[DAILY_USAGE_KEY] else None
+        ),
         custom_attrs_fn=lambda data: {
             "current_day": data[DAILY_USAGE_KEY].usage_day
             if data[DAILY_USAGE_KEY]
@@ -108,9 +108,11 @@ SMART_METER_ENTITY_DESCRIPTIONS = [
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         suggested_display_precision=3,
-        value_fn=lambda data: data[LAST_MONTH_USAGE_KEY].sum_all_month
-        if data[LAST_MONTH_USAGE_KEY]
-        else None,
+        value_fn=lambda data: (
+            data[LAST_MONTH_USAGE_KEY].sum_all_month
+            if data[LAST_MONTH_USAGE_KEY]
+            else None
+        ),
         custom_attrs_fn=lambda data: {
             "month": data[LAST_MONTH_USAGE_KEY].usage_month
             if data[LAST_MONTH_USAGE_KEY]
