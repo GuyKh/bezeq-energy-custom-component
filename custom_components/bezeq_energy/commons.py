@@ -1,4 +1,8 @@
-"""Common methods for Bezeq Energy."""
+"""
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
+Common methods for Bezeq Energy.
+"""
 
 from datetime import date
 

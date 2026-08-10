@@ -1,4 +1,6 @@
 """
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
 Custom integration to integrate bezeq_energy with Home Assistant.
 
 For more details about this integration, please refer to

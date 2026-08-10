@@ -1,4 +1,8 @@
-"""Constants for bezeq_energy."""
+"""
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
+Constants for bezeq_energy.
+"""
 
 from logging import Logger, getLogger
 

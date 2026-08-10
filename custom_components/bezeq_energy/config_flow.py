@@ -1,4 +1,8 @@
-"""Adds config flow for Bezeq Energy."""
+"""
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
+Adds config flow for Bezeq Energy.
+"""
 
 from __future__ import annotations
 
