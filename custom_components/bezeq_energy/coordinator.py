@@ -1,4 +1,8 @@
-"""DataUpdateCoordinator for bezeq_energy."""
+"""
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
+DataUpdateCoordinator for bezeq_energy.
+"""
 
 from __future__ import annotations
 

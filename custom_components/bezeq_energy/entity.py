@@ -1,4 +1,8 @@
-"""BezeqEnergyEntity class."""
+"""
+Copyright (c) 2019 - 2024  Joakim Sørensen @GuyKh.
+
+BezeqEnergyEntity class.
+"""
 
 from __future__ import annotations
 
